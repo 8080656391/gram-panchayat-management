@@ -1,0 +1,217 @@
+.tax-list {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.taxes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.taxes-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.taxes-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.taxes-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.3s ease;
+}
+
+.taxes-table tbody tr:hover {
+  background-color: #f8f9ff;
+}
+
+.taxes-table td {
+  padding: 16px;
+}
+
+.tax-id {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.amount {
+  font-weight: 600;
+  color: #333;
+}
+
+.payment-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 150px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s ease;
+}
+
+.percentage {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.status-icon.paid {
+  color: #10b981;
+}
+
+.status-icon.partial {
+  color: #f59e0b;
+}
+
+.status-icon.pending {
+  color: #ef4444;
+}
+
+.status-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.status-label.paid {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.status-label.partial {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-label.pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-edit {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.btn-edit:hover {
+  color: #5568d3;
+}
+
+.edit-payment {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.edit-payment input {
+  width: 100px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-save {
+  background: #10b981;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #059669;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  color: #666;
+}
+
+.btn-pay-online {
+  padding: 4px 8px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-pay-online:hover {
+  background: #5568d3;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .taxes-table {
+    font-size: 0.9rem;
+  }
+
+  .taxes-table th,
+  .taxes-table td {
+    padding: 12px;
+  }
+
+  .progress-bar {
+    min-width: 80px;
+  }
+}

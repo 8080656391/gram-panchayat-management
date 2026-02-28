@@ -1,0 +1,476 @@
+# System Architecture & Flow Diagrams
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GRAM PANCHAYAT SYSTEM                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                     ┌────────┴────────┐
+                     │                 │
+              ┌──────▼──────┐   ┌──────▼──────┐
+              │ FRONTEND    │   │   BACKEND   │
+              │ (React App) │   │    (none)    │
+              └──────┬──────┘   └─────────────┘
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+   ┌────▼───┐  ┌────▼───┐  ┌────▼───┐
+   │ Router │  │ Auth   │  │ Pages  │
+   │        │  │Context │  │        │
+   └────────┘  └────────┘  └────────┘
+```
+
+---
+
+## 🔐 Authentication & Authorization Flow
+
+```
+┌─────────────────┐
+│   App Starts    │
+└────────┬────────┘
+         │
+         ├─→ Check localStorage for saved user
+         │
+         ├─→ User found? ┐
+         │               │ YES
+         │               ├─→ Load user context
+         │               │
+         │               └─→ Route to Dashboard
+         │
+         └─→ User not found? ┐
+                             │ NO
+                             ├─→ Redirect to /login
+                             │
+                             ├─→ User selects role
+                             │
+                             ├─→ Create user object
+                             │
+                             ├─→ Save to localStorage
+                             │
+                             └─→ Route to Dashboard
+```
+
+---
+
+## 🌳 Route & Role Protection Tree
+
+```
+                    Application Routes
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+    ┌───▼────┐        ┌────▼────┐       ┌────▼───────┐
+    │ /login │        │ /        │       │ Protected  │
+    │        │        │Dashboard │       │   Routes   │
+    │PUBLIC  │        │          │       │            │
+    │        │        │Protected │       │            │
+    └────────┘        └────┬─────┘       └───────┬────┘
+                           │                     │
+                  ┌────────┴─────────┐          │
+                  │                  │          │
+            ┌─────▼────┐      ┌─────▼────┐     │
+            │ Citizen  │      │  Staff   │     │
+            │  Access  │      │  Access  │     │
+            └──────────┘      └─────┬────┘     │
+                                    │          │
+                            ┌───────┴──────┐   │
+                            │              │   │
+                       ┌────▼────┐   ┌────▼──┐
+                       │ Reports │   │ Users │
+                       │ Settings│   │ Admin │
+                       │ Features│   │ Pages │
+                       └─────────┘   └───────┘
+```
+
+---
+
+## 👥 Role Hierarchy & Permissions
+
+```
+                    ADMINISTRATOR
+                    (Full Access)
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+    ┌───▼───┐         ┌───▼───┐        ┌───▼────┐
+    │Reports│         │ Users │        │Settings│
+    │Section│         │ Manager        │Section │
+    │       │         │       │        │        │
+    └───────┘         └───────┘        └────────┘
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │
+                    ┌─────▼────┐
+                    │   STAFF   │
+                    │(Management│
+                    │ Access)   │
+                    └─────┬─────┘
+                          │
+            ┌─────────────┼──────────────┐
+            │             │              │
+        ┌───▼───┐   ┌────▼────┐   ┌────▼────┐
+        │Cert   │   │   Tax   │   │Grievance│
+        │Manage │   │Manage   │   │Manage   │
+        └───────┘   └─────────┘   └─────────┘
+            │             │              │
+            └─────────────┼──────────────┘
+                          │
+                    ┌─────▼──────┐
+                    │  CITIZEN   │
+                    │ (User      │
+                    │  Access)   │
+                    └─────┬──────┘
+                          │
+            ┌─────────────┼──────────────┐
+            │             │              │
+        ┌───▼────┐   ┌───▼────┐   ┌────▼────┐
+        │ Request│   │ Pay Tax│   │Grievance│
+        │Cert    │   │Status  │   │System   │
+        └────────┘   └────────┘   └─────────┘
+```
+
+---
+
+## 📑 Navigation Structure by Role
+
+### CITIZEN Navigation
+```
+┌─────────────────────────────────────┐
+│ 🏛️ Gram Panchayat   [CITIZEN] [Logout]│
+├─────────────────────────────────────┤
+│ 🏠 Dashboard                        │
+│ 📄 Certificates                     │
+│ 💵 Tax Payment                      │
+│ 🚨 Grievances                       │
+│ 📚 Schemes                          │
+└─────────────────────────────────────┘
+```
+
+### STAFF Navigation
+```
+┌─────────────────────────────────────┐
+│ 🏛️ Gram Panchayat   [STAFF] [Logout]  │
+├─────────────────────────────────────┤
+│ 🏠 Dashboard                        │
+│ 📄 Certificates (Management)        │
+│ 💵 Tax Management                   │
+│ 🚨 Grievances (Management)          │
+│ 📚 Schemes (Management)             │
+└─────────────────────────────────────┘
+```
+
+### ADMIN Navigation
+```
+┌─────────────────────────────────────┐
+│ 🏛️ Gram Panchayat   [ADMIN] [Logout] │
+├─────────────────────────────────────┤
+│ 🏠 Dashboard                        │
+│ 📄 Certificates (Management)        │
+│ 💵 Tax Management                   │
+│ 🚨 Grievances (Management)          │
+│ 📚 Schemes (Management)             │
+│ ─────────────────────────────────  │
+│ 📊 Reports & Analytics              │
+│ 👥 User Management                  │
+│ ⚙️ System Settings                   │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 📄 Login Page Flow
+
+```
+                    User Visits /login
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+    ┌────▼────┐        ┌───▼────┐      ┌───▼────┐
+    │ CITIZEN │        │ STAFF  │      │ ADMIN  │
+    │ Card    │        │ Card   │      │ Card   │
+    │ Select  │        │ Select │      │ Select │
+    └────┬────┘        └───┬────┘      └───┬────┘
+         │                 │               │
+         └─────────────────┼───────────────┘
+                           │
+                 ┌─────────▼────────┐
+                 │ Login User with  │
+                 │ Selected Role    │
+                 └────────┬─────────┘
+                          │
+                 ┌────────▼────────┐
+                 │ Save to Local   │
+                 │ Storage         │
+                 └────────┬────────┘
+                          │
+                 ┌────────▼────────┐
+                 │ Redirect to /   │
+                 │ (Dashboard)     │
+                 └─────────────────┘
+```
+
+---
+
+## 🔄 Component Interaction Diagram
+
+```
+┌──────────────────────────────────────────────┐
+│            App.tsx (Root)                    │
+├──────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────┐   │
+│  │  AuthProvider (Context)             │   │
+│  │  ┌───────────────────────────────┐  │   │
+│  │  │ useAuth() - Custom Hook       │  │   │
+│  │  │ • user                        │  │   │
+│  │  │ • isAuthenticated             │  │   │
+│  │  │ • userRole                    │  │   │
+│  │  │ • login(role)                 │  │   │
+│  │  │ • logout()                    │  │   │
+│  │  └───────────────────────────────┘  │   │
+│  └──────────┬──────────────────────────┘   │
+│             │                              │
+│    ┌────────▼────────┐                    │
+│    │ Router          │                    │
+│    ├─────────────────┤                    │
+│    │ /login          │                    │
+│    │ /unauthorized   │                    │
+│    │ Protected Routes│                    │
+│    └────────┬────────┘                    │
+│             │                              │
+│   ┌─────────▼──────────┐                  │
+│   │ ProtectedRoute     │                  │
+│   │ Component          │                  │
+│   │ • Checks Auth      │                  │
+│   │ • Validates Role   │                  │
+│   │ • Redirects if     │                  │
+│   │   unauthorized     │                  │
+│   └─────────┬──────────┘                  │
+│             │                              │
+│   ┌─────────▼────────────────┐           │
+│   │ Page Components           │           │
+│   ├──────────────────────────┤           │
+│   │ • Login.tsx              │           │
+│   │ • Dashboard.tsx          │           │
+│   │ • AdminReports.tsx       │           │
+│   │ • AdminUsers.tsx         │           │
+│   │ • AdminSettings.tsx      │           │
+│   │ • Unauthorized.tsx       │           │
+│   └──────────────────────────┘           │
+│             │                             │
+│   ┌─────────▼────────────┐               │
+│   │ Navigation Component  │               │
+│   │ Uses useAuth() to:    │               │
+│   │ • Filter menu items   │               │
+│   │ • Show role badge     │               │
+│   │ • Handle logout       │               │
+│   └───────────────────────┘               │
+└──────────────────────────────────────────────┘
+```
+
+---
+
+## 🔐 Protected Route Logic
+
+```
+<ProtectedRoute requiredRole={['admin']}>
+    <AdminReports />
+</ProtectedRoute>
+    │
+    ├─→ Check: user exists in context?
+    │   │
+    │   ├─→ NO → Redirect to /login
+    │   │
+    │   └─→ YES → Continue
+    │
+    ├─→ Check: user.role in requiredRole?
+    │   │
+    │   ├─→ NO → Redirect to /unauthorized
+    │   │
+    │   └─→ YES → Render component
+    │
+    └─→ Component Displayed
+```
+
+---
+
+## 💾 State Management
+
+```
+┌─────────────────────────────┐
+│    Browser localStorage     │
+├─────────────────────────────┤
+│  {                          │
+│    "currentUser": {         │
+│      id: "user_xxx",        │
+│      name: "Admin",         │
+│      role: "admin",         │
+│      email: "...",          │
+│      phone: "...",          │
+│      village: "..."         │
+│    }                        │
+│  }                          │
+└────────────┬────────────────┘
+             │
+             │ Load on app start
+             │
+             ▼
+┌──────────────────────────────┐
+│    AuthContext               │
+├──────────────────────────────┤
+│  • user: User | null         │
+│  • isAuthenticated: bool     │
+│  • userRole: role | null     │
+│  • login(role): void         │
+│  • logout(): void            │
+└──────────────────────────────┘
+             │
+             │ Consumed by
+             │
+    ┌────────┴──────────┐
+    │                   │
+ ┌──▼───┐          ┌───▼──┐
+ │ App  │          │ Nav  │
+ │ Page │          │ Bar  │
+ └──────┘          └──────┘
+```
+
+---
+
+## 🎨 Page Flow & User Journey
+
+### Citizen Journey
+```
+Login Page
+    ↓ [Select Citizen]
+    ↓
+Citizen Dashboard
+    ├─→ Apply for Certificate
+    │   └─→ Certificate Form
+    │       └─→ Certificate List
+    │
+    ├─→ Pay Tax
+    │   └─→ Tax Payment Portal
+    │
+    ├─→ File Grievance
+    │   └─→ Grievance Form
+    │       └─→ Grievance Tracking
+    │
+    └─→ Browse Schemes
+        └─→ Scheme Details
+            └─→ Apply to Scheme
+```
+
+### Admin Journey
+```
+Login Page
+    ↓ [Select Admin]
+    ↓
+Admin Dashboard
+    ├─→ Reports & Analytics
+    │   └─→ View statistics
+    │       └─→ Filter by date
+    │
+    ├─→ User Management
+    │   └─→ Create new user
+    │       └─→ Assign roles
+    │       └─→ Deactivate users
+    │
+    └─→ System Settings
+        └─→ Configure services
+            └─→ Manage features
+            └─→ View system info
+```
+
+---
+
+## 🔑 Key Files Dependencies
+
+```
+src/
+│
+├── main.tsx
+│   └──→ App.tsx
+│       ├──→ AuthContext.tsx (Provider)
+│       ├──→ Router (BrowserRouter)
+│       ├──→ ProtectedRoute.tsx
+│       │   └──→ AuthContext (useAuth hook)
+│       │
+│       └──→ Pages/
+│           ├──→ Login.tsx
+│           │   └──→ AuthContext (login)
+│           │
+│           ├──→ Dashboard.tsx
+│           │   └──→ AuthContext (useAuth)
+│           │
+│           └──→ admin/
+│               ├──→ AdminReports.tsx
+│               ├──→ AdminUsers.tsx
+│               └──→ AdminSettings.tsx
+│
+├── components/
+│   ├──→ Navigation.tsx
+│   │   └──→ AuthContext (useAuth, logout)
+│   └──→ ProtectedRoute.tsx
+│       └──→ AuthContext (useAuth)
+│
+└── context/
+    └──→ AuthContext.tsx
+        └──→ User type from types/index.ts
+```
+
+---
+
+## 📊 Data Flow Example: User Login
+
+```
+User selects "Admin" on login page
+    │
+    ├──→ handleLogin('admin') called
+    │
+    ├──→ Creates user object:
+    │   {
+    │     id: "user_1707143400000",
+    │     name: "Administrator",
+    │     role: "admin",
+    │     email: "admin@...",
+    │     phone: "+91-...",
+    │     village: "Sample Village"
+    │   }
+    │
+    ├──→ Calls login(user) from AuthContext
+    │
+    ├──→ AuthContext updates state:
+    │   setUser(newUser)
+    │
+    ├──→ Saves to localStorage:
+    │   localStorage.setItem('currentUser', JSON.stringify(user))
+    │
+    ├──→ Returns from login()
+    │
+    ├──→ navigate('/') to Dashboard
+    │
+    ├──→ Dashboard renders and calls useAuth()
+    │
+    ├──→ useAuth() returns updated context:
+    │   {
+    │     user: {...},
+    │     isAuthenticated: true,
+    │     userRole: "admin",
+    │     login: function,
+    │     logout: function
+    │   }
+    │
+    ├──→ Navigation renders with:
+    │   - Role-specific menu items
+    │   - Role badge: "ADMIN"
+    │   - Logout button
+    │
+    └──→ User sees admin dashboard
+```
+
+---
+
+This comprehensive visual guide helps understand how all components and flows work together! 🎨
+
