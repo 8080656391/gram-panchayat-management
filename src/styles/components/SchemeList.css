@@ -189,6 +189,36 @@
   color: #5568d3;
 }
 
+.apply-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.apply-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: #10b981;
+  color: white;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apply-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.2);
+}
+
+.apply-note {
+  color: #444;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px;

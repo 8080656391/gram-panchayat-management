@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, Shield } from 'lucide-react';
 import '../../styles/pages/AdminUsers.css';
 
@@ -12,56 +12,116 @@ interface User {
 }
 
 const AdminUsers: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      name: 'Ramesh Kumar',
-      email: 'ramesh@village.local',
-      role: 'admin',
-      status: 'active',
-      joinDate: '2025-01-15',
-    },
-    {
-      id: '2',
-      name: 'Priya Singh',
-      email: 'priya@village.local',
-      role: 'staff',
-      status: 'active',
-      joinDate: '2025-02-01',
-    },
-    {
-      id: '3',
-      name: 'Vikram Patel',
-      email: 'vikram@village.local',
-      role: 'citizen',
-      status: 'active',
-      joinDate: '2025-02-10',
-    },
-    {
-      id: '4',
-      name: 'Anjali Gupta',
-      email: 'anjali@village.local',
-      role: 'citizen',
-      status: 'inactive',
-      joinDate: '2025-01-20',
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch users from MongoDB
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/users?limit=1000', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.users) {
+            const formattedUsers = data.data.users
+              .filter((user: any) => user && user._id)
+              .map((user: any) => ({
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.isActive ? 'active' : 'inactive',
+                joinDate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+              }));
+            setUsers(formattedUsers);
+          }
+        } else {
+          setError('Failed to fetch users');
+        }
+      } catch (err) {
+        setError('Error connecting to server');
+        console.error('Error fetching users:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'citizen' as const });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '', village: '', role: 'citizen' as const });
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  const handleAddUser = () => {
-    const newUser: User = {
-      id: `user_${Date.now()}`,
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      status: 'active',
-      joinDate: new Date().toISOString().split('T')[0],
-    };
-    setUsers([...users, newUser]);
-    setFormData({ name: '', email: '', role: 'citizen' });
-    setShowAddForm(false);
+  const handleAddUser = async () => {
+    // Validate fields
+    const errors: { [key: string]: string } = {};
+    if (!formData.name.trim()) errors.name = 'Name is required';
+    if (!formData.email.trim()) errors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Invalid email';
+    if (!formData.password || formData.password.length < 6) errors.password = 'Password must be at least 6 characters';
+    if (!formData.phone.trim()) errors.phone = 'Phone is required';
+    else if (!/^\d{10}$/.test(formData.phone)) errors.phone = 'Phone must be 10 digits';
+    if (!formData.village.trim()) errors.village = 'Village is required';
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          phone: formData.phone,
+          village: formData.village,
+        }),
+      });
+      if (response.ok) {
+        setFormData({ name: '', email: '', password: '', phone: '', village: '', role: 'citizen' });
+        setFormErrors({});
+        setShowAddForm(false);
+        // Refresh user list
+        const usersRes = await fetch('/api/users?limit=1000', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (usersRes.ok) {
+          const data = await usersRes.json();
+          if (data.success && data.data?.users) {
+            const formattedUsers = data.data.users
+              .filter((user: any) => user && user._id)
+              .map((user: any) => ({
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.isActive ? 'active' : 'inactive',
+                joinDate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+              }));
+            setUsers(formattedUsers);
+          }
+        }
+      } else {
+        const errData = await response.json();
+        alert(errData.message || 'Failed to add user');
+      }
+    } catch (err) {
+      alert('Error adding user');
+      console.error(err);
+    }
   };
 
   const handleDeleteUser = (id: string) => {
@@ -113,6 +173,7 @@ const AdminUsers: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter full name"
             />
+            {formErrors.name && <span className="error-message">{formErrors.name}</span>}
           </div>
           <div className="form-group">
             <label>Email</label>
@@ -122,6 +183,37 @@ const AdminUsers: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="Enter email"
             />
+            {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="Enter password"
+            />
+            {formErrors.password && <span className="error-message">{formErrors.password}</span>}
+          </div>
+          <div className="form-group">
+            <label>Phone</label>
+            <input
+              type="text"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="Enter 10-digit phone number"
+            />
+            {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
+          </div>
+          <div className="form-group">
+            <label>Village</label>
+            <input
+              type="text"
+              value={formData.village}
+              onChange={(e) => setFormData({ ...formData, village: e.target.value })}
+              placeholder="Enter village name"
+            />
+            {formErrors.village && <span className="error-message">{formErrors.village}</span>}
           </div>
           <div className="form-group">
             <label>Role</label>

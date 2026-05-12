@@ -131,7 +131,7 @@ interface Certificate {
 ### Certificate Document Type
 ```typescript
 interface CertificateDocument {
-  type: 'birth' | 'death' | 'residence' | 'marriage' | 'photo';
+  type: 'aadhaar' | 'ration-card' | 'photo';
   file?: File;
   fileName: string;
   uploadDate: string;

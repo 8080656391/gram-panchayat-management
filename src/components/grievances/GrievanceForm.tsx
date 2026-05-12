@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { Grievance } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/components/GrievanceForm.css';
+import { Upload, FileText, MapPin, Phone, Mail, User } from 'lucide-react';
 
 interface GrievanceFormProps {
-  onSubmit: (grievance: Omit<Grievance, 'id'>) => void;
+  onSubmit: (formData: FormData) => void;
 }
 
 const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    complainantName: '',
-    email: '',
-    phone: '',
+    complainantName: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
     category: 'roads' as const,
     description: '',
     location: '',
@@ -19,30 +22,88 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
     priority: 'medium' as const,
     attachments: [] as string[],
   });
+
+  // Autofill user data when user changes (on login or context update)
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        complainantName: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      }));
+    }
+  }, [user]);
   const [files, setFiles] = useState<File[]>([]); // local file objects for preview
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Category options with bilingual labels
+  const categoryOptions = [
+    { value: 'roads', label: 'Roads & Infrastructure', labelMr: 'रस्ते व पायाभूत सुविधा' },
+    { value: 'water', label: 'Water Supply', labelMr: 'पाणी पुरवठा' },
+    { value: 'electricity', label: 'Electricity', labelMr: 'वीज' },
+    { value: 'sanitation', label: 'Sanitation', labelMr: 'स्वच्छता' },
+    { value: 'health', label: 'Health Services', labelMr: 'आरोग्य सेवा' },
+    { value: 'education', label: 'Education', labelMr: 'शिक्षण' },
+    { value: 'other', label: 'Other', labelMr: 'इतर' },
+  ];
+
+  // Priority options with bilingual labels
+  const priorityOptions = [
+    { value: 'low', label: 'Low / कमी', color: '#10b981' },
+    { value: 'medium', label: 'Medium / मध्यम', color: '#f59e0b' },
+    { value: 'high', label: 'High / उच्च', color: '#ef4444' },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // convert files to object URLs for storage
-    const attachmentUrls = files.map((f) => URL.createObjectURL(f));
-    onSubmit({
-      ...formData,
-      attachments: attachmentUrls,
-    } as Omit<Grievance, 'id'>);
-    // reset form
-    setFormData({
-      complainantName: '',
-      email: '',
-      phone: '',
-      category: 'roads',
-      description: '',
-      location: '',
-      filedDate: new Date().toISOString().split('T')[0],
-      status: 'registered',
-      priority: 'medium',
-      attachments: [],
+    setErrorMsg(null);
+    // Validate phone number (must be 10 digits, Indian format)
+    const phone = formData.phone.trim();
+    const phonePattern = /^\d{10}$/;
+    if (!phonePattern.test(phone)) {
+      setErrorMsg('Phone number must be 10 digits (e.g., 9876543210)');
+      return;
+    }
+    // Validate required fields
+    if (!formData.complainantName || !formData.email || !formData.category || !formData.description || !formData.location) {
+      setErrorMsg('Please fill all required fields.');
+      return;
+    }
+    // Create FormData for file upload
+    const formDataToSend = new FormData();
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('location', formData.location);
+    formDataToSend.append('priority', formData.priority);
+    formDataToSend.append('phone', phone);
+    // Append files
+    files.forEach((file) => {
+      formDataToSend.append('attachments', file);
     });
-    setFiles([]);
+    try {
+      // Call onSubmit with FormData and handle backend errors
+      const result = await onSubmit(formDataToSend);
+      if (result && result.error) {
+        setErrorMsg(result.error);
+        return;
+      }
+      // reset form
+      setFormData({
+        complainantName: '',
+        email: '',
+        phone: '',
+        category: 'roads',
+        description: '',
+        location: '',
+        filedDate: new Date().toISOString().split('T')[0],
+        status: 'registered',
+        priority: 'medium',
+        attachments: [],
+      });
+      setFiles([]);
+    } catch (err: any) {
+      setErrorMsg('Server error. Please try again.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -68,10 +129,15 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
 
   return (
     <form className="grievance-form" onSubmit={handleSubmit}>
-      <h2>File a Grievance</h2>
+      {errorMsg && <div className="error-message">{errorMsg}</div>}
+      <h2>File a Grievance / तक्रार दाखल करा</h2>
+      <p className="form-subtitle">Submit your complaint and track its progress</p>
+      
       <div className="form-grid">
         <div className="form-group full">
-          <label htmlFor="attachments">Upload Photo(s)</label>
+          <label htmlFor="attachments">
+            <Upload size={18} /> Upload Photo(s) / फोटो अपलोड करा
+          </label>
           <input
             type="file"
             id="attachments"
@@ -79,6 +145,7 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             accept="image/*"
             multiple
             onChange={handleFileChange}
+            className="file-input"
           />
           {files.length > 0 && (
             <div className="attachment-preview">
@@ -94,7 +161,9 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
           )}
         </div>
         <div className="form-group full">
-          <label htmlFor="complainantName">Your Name *</label>
+          <label htmlFor="complainantName">
+            <User size={18} /> Your Name * / आपले नाव *
+          </label>
           <input
             type="text"
             id="complainantName"
@@ -102,12 +171,14 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             value={formData.complainantName}
             onChange={handleChange}
             required
-            placeholder="Enter your full name"
+            placeholder="Enter your full name / आपले पूर्ण नाव"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="email">Email *</label>
+          <label htmlFor="email">
+            <Mail size={18} /> Email * / ईमेल *
+          </label>
           <input
             type="email"
             id="email"
@@ -120,7 +191,9 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="phone">Phone *</label>
+          <label htmlFor="phone">
+            <Phone size={18} /> Phone * / फोन *
+          </label>
           <input
             type="tel"
             id="phone"
@@ -128,34 +201,38 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             value={formData.phone}
             onChange={handleChange}
             required
-            placeholder="10-digit mobile number"
+            placeholder="Enter your phone number / आपला फोन नंबर"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="category">Category *</label>
+          <label htmlFor="category">
+            <FileText size={18} /> Category * / प्रकार *
+          </label>
           <select name="category" value={formData.category} onChange={handleChange} required>
-            <option value="roads">Roads & Infrastructure</option>
-            <option value="water">Water Supply</option>
-            <option value="electricity">Electricity</option>
-            <option value="sanitation">Sanitation</option>
-            <option value="health">Health Services</option>
-            <option value="education">Education</option>
-            <option value="other">Other</option>
+            {categoryOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label} ({opt.labelMr})
+              </option>
+            ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="priority">Priority *</label>
+          <label htmlFor="priority">
+            Priority * / प्राधान्य *
+          </label>
           <select name="priority" value={formData.priority} onChange={handleChange} required>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+            {priorityOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="filedDate">Date *</label>
+          <label htmlFor="filedDate">Date * / तारीख *</label>
           <input
             type="date"
             id="filedDate"
@@ -167,7 +244,9 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
         </div>
 
         <div className="form-group full">
-          <label htmlFor="location">Location *</label>
+          <label htmlFor="location">
+            <MapPin size={18} /> Location * / ठिकाण *
+          </label>
           <input
             type="text"
             id="location"
@@ -175,26 +254,28 @@ const GrievanceForm: React.FC<GrievanceFormProps> = ({ onSubmit }) => {
             value={formData.location}
             onChange={handleChange}
             required
-            placeholder="Location of the issue"
+            placeholder="Location of the issue / समस्येचे स्थान"
           />
         </div>
 
         <div className="form-group full">
-          <label htmlFor="description">Detailed Description *</label>
+          <label htmlFor="description">
+            <FileText size={18} /> Detailed Description * / तपशीलवार वर्णन *
+          </label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
             required
-            placeholder="Please describe the issue in detail"
+            placeholder="Please describe the issue in detail / कृपया समस्येचा तपशीलवार वर्णन करा"
             rows={5}
           />
         </div>
       </div>
 
       <button type="submit" className="btn-submit">
-        Submit Grievance
+        Submit Grievance / तक्रार सादर करा
       </button>
     </form>
   );

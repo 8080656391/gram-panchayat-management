@@ -1,31 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Users, Shield, User, LogIn, UserPlus } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import CitizenRegister from '../components/certificates/CitizenRegister';
 import { CitizenRegistration } from '../types';
 import '../styles/pages/Login.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, loading } = useAuth();
+  const { t } = useLanguage();
   const [showRegister, setShowRegister] = useState(false);
-
-  const handleLogin = (role: 'citizen' | 'staff' | 'admin') => {
-    login(role);
-    // navigation will occur via effect when isAuthenticated updates
-  };
-
-  const handleCitizenRegister = (registration: CitizenRegistration) => {
-    // Save registration to localStorage
-    const registrations = JSON.parse(localStorage.getItem('citizenRegistrations') || '[]');
-    registrations.push(registration);
-    localStorage.setItem('citizenRegistrations', JSON.stringify(registrations));
-    
-    // Automatically login after registration
-    login('citizen');
-    navigate('/');
-  };
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    village: '',
+    role: 'citizen' as 'citizen' | 'staff' | 'admin'
+  });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -33,85 +31,264 @@ const Login: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError('');
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await login(formData.email, formData.password);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        village: formData.village,
+        role: formData.role
+      });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCitizenRegister = async (registration: CitizenRegistration) => {
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await register({
+        name: registration.name,
+        email: registration.email,
+        password: registration.password,
+        phone: registration.phone,
+        village: registration.village,
+        role: 'citizen',
+        aadharNumber: registration.aadharNumber,
+        dateOfBirth: registration.dateOfBirth,
+        address: registration.address
+      });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="login-container">
+        <div className="loading-spinner">{t('common.loading')}</div>
+      </div>
+    );
+  }
+
   if (showRegister) {
     return (
       <CitizenRegister
         onRegister={handleCitizenRegister}
-        onCancel={() => setShowRegister(false)}
+        onCancel={() => {
+          setShowRegister(false);
+          setError('');
+        }}
+        error={error}
       />
     );
   }
 
-  const roles = [
-    {
-      id: 'citizen',
-      name: 'Citizen',
-      icon: User,
-      description: 'Access services like certificates, schemes, tax payment, and grievance filing',
-      color: '#4CAF50',
-    },
-    {
-      id: 'staff',
-      name: 'Staff',
-      icon: Users,
-      description: 'Manage applications, process requests, and monitor operations',
-      color: '#2196F3',
-    },
-    {
-      id: 'admin',
-      name: 'Administrator',
-      icon: Shield,
-      description: 'Full system access, user management, reports, and configuration',
-      color: '#FF9800',
-    },
-  ];
-
   return (
     <div className="login-container">
       <div className="login-header">
-        <h1>Gram Panchayat Management System</h1>
-        <p>Select your role to access the system</p>
+        <h1>{t('login.title')}</h1>
+        <p>{isLogin ? t('login.subtitle') : t('login.subtitle')}</p>
       </div>
 
       <div className="login-content">
-        <div className="roles-grid">
-          {roles.map((role) => {
-            const IconComponent = role.icon;
-            
-            return (
-              <div
-                key={role.id}
-                className="role-card"
-                style={{
-                  borderColor: '#ddd',
-                  backgroundColor: '#fff',
-                }}
-              >
-                <div className="role-icon-container" style={{ color: role.color }}>
-                  <IconComponent size={48} />
+        <div className="auth-form-container">
+          <div className="auth-tabs">
+            <button
+              className={`auth-tab ${isLogin ? 'active' : ''}`}
+              onClick={() => {
+                setIsLogin(true);
+                setError('');
+                setFormData({
+                  name: '',
+                  email: '',
+                  password: '',
+                  phone: '',
+                  village: '',
+                  role: 'citizen'
+                });
+              }}
+            >
+              <LogIn size={18} />
+              {t('login.button')}
+            </button>
+            <button
+              className={`auth-tab ${!isLogin ? 'active' : ''}`}
+              onClick={() => {
+                setIsLogin(false);
+                setError('');
+                setFormData({
+                  name: '',
+                  email: '',
+                  password: '',
+                  phone: '',
+                  village: '',
+                  role: 'citizen'
+                });
+              }}
+            >
+              <UserPlus size={18} />
+              Register
+            </button>
+          </div>
+
+          <form onSubmit={isLogin ? handleLogin : handleRegister} className="auth-form">
+            {error && <div className="error-message">{error || t('login.error')}</div>}
+
+            {!isLogin && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="name">{t('admin.name')}</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required={!isLogin}
+                    placeholder={t('login.username')}
+                  />
                 </div>
-                <h2>{role.name}</h2>
-                <p className="role-description">{role.description}</p>
+
+                <div className="form-group">
+                  <label htmlFor="phone">{t('admin.phone')}</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required={!isLogin}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="village">{t('admin.address')}</label>
+                  <input
+                    type="text"
+                    id="village"
+                    name="village"
+                    value={formData.village}
+                    onChange={handleInputChange}
+                    required={!isLogin}
+                    placeholder="Enter your village"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="role">{t('admin.role')}</label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                  >
+                    <option value="citizen">Citizen</option>
+                    <option value="staff">Staff</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="email">{t('admin.email')}</label>
+              <div className="input-with-icon">
+                <Mail size={18} />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder={t('login.username')}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">{t('login.password')}</label>
+              <div className="input-with-icon">
+                <Lock size={18} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  placeholder={t('login.password')}
+                  minLength={6}
+                />
                 <button
-                  onClick={() => handleLogin(role.id as 'citizen' | 'staff' | 'admin')}
-                  className="role-button"
-                  style={{ backgroundColor: role.color }}
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  <LogIn size={18} />
-                  Login as {role.name}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-            );
-          })}
+            </div>
+
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t('common.loading') : (isLogin ? t('login.button') : t('admin.addUser'))}
+            </button>
+          </form>
         </div>
 
-        <div className="citizen-register-section">
-          <p>New to the system?</p>
-          <button className="btn-register-citizen" onClick={() => setShowRegister(true)}>
-            <UserPlus size={18} />
-            Register as Citizen
-          </button>
-        </div>
+        {isLogin && (
+          <div className="citizen-register-section">
+            <p>New to the system?</p>
+            <button className="btn-register-citizen" onClick={() => {
+              setError('');
+              setShowRegister(true);
+            }}>
+              <UserPlus size={18} />
+              Register as Citizen
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="login-footer">

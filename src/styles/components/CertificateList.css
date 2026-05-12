@@ -199,8 +199,46 @@
   border-color: #f59e0b;
 }
 
+.document-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.doc-count,
+.no-docs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.doc-count {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.no-docs {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
 .btn-icon.reapply:hover {
   background: #fffbeb;
+}
+
+.status-label.admin-review {
+  background-color: #e0f2fe;
+  color: #0c4a6e;
+}
+
+.status-icon.admin-review {
+  color: #3b82f6;
 }
 
 .rejection-inline {
@@ -373,22 +411,6 @@
 .status-label.rejected {
   background-color: #fee2e2;
   color: #991b1b;
-}
-
-.btn-delete {
-  background: none;
-  border: none;
-  color: #ef4444;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s ease;
-}
-
-.btn-delete:hover {
-  color: #dc2626;
 }
 
 .empty-state {

@@ -11,10 +11,189 @@
 .certificate-form h2 {
   color: #1a1a2e;
   margin-top: 0;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   font-size: 1.8rem;
   border-bottom: 3px solid #667eea;
   padding-bottom: 15px;
+}
+
+.form-subtitle {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+/* Form Header with Back Button */
+.form-header-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-header-step .btn-back {
+  background: #f5f7ff;
+  border: none;
+  color: #667eea;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.form-header-step .btn-back:hover {
+  background: #667eea;
+  color: white;
+}
+
+.form-header-step h2 {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 5px;
+}
+
+.form-header-step .form-subtitle {
+  margin-bottom: 0;
+}
+
+/* Certificate Type Selection Grid (Step 1) */
+.cert-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.cert-type-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cert-type-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+}
+
+.cert-type-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.cert-type-card h3 {
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.cert-type-card p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Form Header with Back Button */
+.form-header {
+  margin-bottom: 25px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s ease;
+}
+
+.btn-back:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* Certificate Type Selection (Step 1) */
+.step-description {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.certificate-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.certificate-type-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.certificate-type-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+}
+
+.cert-type-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.certificate-type-card h3 {
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.marathi-label {
+  color: #667eea;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+}
+
+.cert-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .form-section {

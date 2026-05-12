@@ -4,11 +4,12 @@ import '../../styles/pages/Login.css';
 import { Lock, User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 
 interface CitizenRegisterProps {
-  onRegister: (registration: CitizenRegistration) => void;
+  onRegister: (registration: CitizenRegistration) => Promise<void>;
   onCancel: () => void;
+  error?: string;
 }
 
-const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel }) => {
+const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel, error }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -24,6 +25,7 @@ const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel 
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -82,9 +84,11 @@ const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel 
     setStep(1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep2()) return;
+
+    setServerError('');
 
     const registration: CitizenRegistration = {
       id: `citizen_${Date.now()}`,
@@ -98,11 +102,16 @@ const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel 
       aadharNumber: formData.aadharNumber,
       address: formData.address,
       village: formData.village,
+      password: formData.password,
       registrationDate: new Date().toISOString(),
       status: 'active',
     };
 
-    onRegister(registration);
+    try {
+      await onRegister(registration);
+    } catch (err: any) {
+      setServerError(err?.message || 'Registration failed');
+    }
   };
 
   const calculateAge = (dateString: string) => {
@@ -316,6 +325,9 @@ const CitizenRegister: React.FC<CitizenRegisterProps> = ({ onRegister, onCancel 
               </div>
             </>
           )}
+          {serverError || error ? (
+            <div className="error-message form-error">{serverError || error}</div>
+          ) : null}
         </form>
 
         <p className="form-footer">

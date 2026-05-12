@@ -12,6 +12,34 @@
   font-size: 1.5rem;
 }
 
+.language-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.language-tabs .tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.language-tabs .tab:hover {
+  color: #667eea;
+}
+
+.language-tabs .tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -77,5 +105,14 @@
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .language-tabs {
+    margin-bottom: 15px;
+  }
+
+  .language-tabs .tab {
+    padding: 10px 15px;
+    font-size: 0.9rem;
   }
 }

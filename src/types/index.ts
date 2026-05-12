@@ -1,9 +1,10 @@
 // Certificate Document Type
 export interface CertificateDocument {
-  type: 'birth' | 'death' | 'residence' | 'marriage' | 'photo';
+  type: 'aadhaar' | 'ration-card' | 'photo';
   file?: File;
   fileName: string;
   uploadDate: string;
+  status?: string;
 }
 
 // Certificate Types
@@ -15,9 +16,10 @@ export interface Certificate {
   applicantPhone: string;
   applicantAge: number;
   certificateType: 'birth' | 'death' | 'residence' | 'marriage';
+  language?: 'en' | 'mr';
   applicationDate: string;
   issuanceDate: string;
-  status: 'pending' | 'under-review' | 'approved' | 'rejected';
+  status: 'pending' | 'under-review' | 'admin-review' | 'approved' | 'rejected';
   certificateNumber: string;
   documents: CertificateDocument[];
   reviewedBy?: string;
@@ -27,6 +29,9 @@ export interface Certificate {
   rejectionReason?: string;
   downloadUrl?: string;
   remarks?: string;
+  partialApproved?: boolean;
+  staffRemarks?: string;
+  adminRemarks?: string;
 }
 
 // Tax Collection Types
@@ -34,10 +39,13 @@ export interface TaxRecord {
   id: string;
   taxpayerId: string;
   taxpayerName: string;
-  taxYear: number;
+  houseTaxAmount: number;
+  healthTaxAmount: number;
+  waterTaxAmount: number;
   taxAmount: number;
   amountPaid: number;
   status: 'pending' | 'partial' | 'paid';
+  taxYear: number;
   dueDate: string;
   paymentDate?: string;
 }
@@ -52,11 +60,18 @@ export interface Grievance {
   description: string;
   location: string;
   filedDate: string;
-  status: 'registered' | 'under-review' | 'in-progress' | 'resolved' | 'closed';
+  status: 'registered' | 'under-review' | 'in-progress' | 'resolved';
   priority: 'low' | 'medium' | 'high';
   attachments?: string[];
   resolution?: string;
   resolutionDate?: string;
+  // Approval workflow fields
+  staffApproval?: 'pending' | 'approved' | 'rejected';
+  staffApprovalDate?: string;
+  staffRemarks?: string;
+  adminApproval?: 'pending' | 'approved' | 'rejected';
+  adminApprovalDate?: string;
+  adminRemarks?: string;
 }
 
 // Government Scheme Types
@@ -84,6 +99,7 @@ export interface User {
   email: string;
   phone: string;
   village: string;
+  age?: number;
   registrationDate?: string;
   aadharNumber?: string;
   dateOfBirth?: string;
@@ -103,6 +119,7 @@ export interface CitizenRegistration {
   aadharNumber: string;
   address: string;
   village: string;
+  password: string;
   registrationDate: string;
   status: 'active' | 'inactive';
 }

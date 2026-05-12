@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Death Certificate Template</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', serif; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .certificate-container { width: 100%; max-width: 900px; background: linear-gradient(135deg, #fff9e6 0%, #fffef0 100%); border: 8px solid #d4af37; padding: 60px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); position: relative; page-break-after: always; }
+    .certificate-container::before { content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; background: linear-gradient(45deg, transparent 0%, rgba(212, 175, 55, 0.1) 50%, transparent 100%); border: 1px solid #d4af37; z-index: -1; }
+    .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #d4af37; padding-bottom: 20px; }
+    .govt-logo { width: 60px; height: 60px; margin: 0 auto 15px; background: #1a472a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #d4af37; font-size: 12px; font-weight: bold; text-align: center; padding: 5px; }
+    .header h1 { color: #1a472a; font-size: 32px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+    .header p { color: #333; font-size: 14px; letter-spacing: 1px; }
+    .content { text-align: center; margin: 40px 0; }
+    .cert-type { font-size: 28px; color: #1a472a; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; }
+    .intro-text { font-size: 16px; color: #333; margin-bottom: 20px; font-style: italic; }
+    .recipient-name { font-size: 36px; color: #d4af37; font-weight: bold; margin: 30px 0; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: #d4af37; text-underline-offset: 8px; }
+    .certificate-details { margin: 40px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 20px; border: 1px dashed #d4af37; background-color: rgba(212, 175, 55, 0.05); }
+    .detail-item { text-align: left; }
+    .detail-label { font-size: 12px; color: #1a472a; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .detail-value { font-size: 14px; color: #333; margin-top: 5px; font-family: 'Courier New', monospace; }
+    .closing-text { font-size: 14px; color: #333; margin: 30px 0; font-style: italic; }
+    .signature-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; margin-top: 60px; padding-top: 40px; border-top: 2px solid #d4af37; }
+    .signature-block { text-align: center; }
+    .signature-line { border-top: 2px solid #333; height: 50px; margin-bottom: 10px; }
+    .signature-title { font-size: 12px; color: #333; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .signature-designation { font-size: 11px; color: #666; margin-top: 5px; }
+    .footer { text-align: center; margin-top: 40px; font-size: 11px; color: #999; border-top: 1px solid #d4af37; padding-top: 20px; }
+    .security-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; padding: 15px; background-color: rgba(212, 175, 55, 0.03); border-radius: 5px; }
+    .security-item { font-size: 10px; color: #666; text-align: center; }
+    @media print { body { background: white; padding: 0; } .certificate-container { box-shadow: none; max-width: 100%; margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="certificate-container">
+    <div class="header">
+      <div class="govt-logo">🏛️</div>
+      <h1>Gram Panchayat</h1>
+      <p>Government Certification Authority</p>
+    </div>
+    <div class="content">
+      <div class="cert-type">Death Certificate</div>
+      <p class="intro-text">This is to certify that</p>
+      <div class="recipient-name">{{APPLICANT_NAME}}</div>
+      <p class="intro-text">This is to certify that <strong>{{APPLICANT_NAME}}</strong> has passed away on <strong>{{DATE_OF_DEATH}}</strong> at <strong>{{PLACE_OF_DEATH}}</strong> and this death certificate is issued for official records.</p>
+      <div class="certificate-details">
+        <div class="detail-item"><div class="detail-label">Certificate Number</div><div class="detail-value">{{CERTIFICATE_NUMBER}}</div></div>
+        <div class="detail-item"><div class="detail-label">Application Date</div><div class="detail-value">{{APPLICATION_DATE}}</div></div>
+        <div class="detail-item"><div class="detail-label">Certificate Type</div><div class="detail-value">Death Certificate</div></div>
+        <div class="detail-item"><div class="detail-label">Issuance Date</div><div class="detail-value">{{ISSUANCE_DATE}}</div></div>
+        <div class="detail-item"><div class="detail-label">Deceased Name</div><div class="detail-value">{{APPLICANT_NAME}}</div></div>
+        <div class="detail-item"><div class="detail-label">Contact Email</div><div class="detail-value">{{APPLICANT_EMAIL}}</div></div>
+        <div class="detail-item"><div class="detail-label">Phone Number</div><div class="detail-value">{{APPLICANT_PHONE}}</div></div>
+        <div class="detail-item"><div class="detail-label">Village</div><div class="detail-value">{{VILLAGE}}</div></div>
+        <div class="detail-item"><div class="detail-label">Aadhar Number</div><div class="detail-value">{{AADHAR_NUMBER}}</div></div>
+        <div class="detail-item"><div class="detail-label">Date of Death</div><div class="detail-value">{{DATE_OF_DEATH}}</div></div>
+        <div class="detail-item"><div class="detail-label">Place of Death</div><div class="detail-value">{{PLACE_OF_DEATH}}</div></div>
+      </div>
+      <div class="certificate-details" style="margin-top: 20px; border-color: #1a472a;">
+        <div class="detail-item"><div class="detail-label">Age at Death</div><div class="detail-value">{{AGE}} years</div></div>
+        <div class="detail-item"><div class="detail-label">Permanent Address</div><div class="detail-value">{{ADDRESS}}</div></div>
+      </div>
+      <p class="closing-text" style="margin-top: 15px; font-size: 12px;">This death certificate is issued as per the provisions of the Registration of Births and Deaths Act, 1969.</p>
+    </div>
+    <div class="signature-section">
+      <div class="signature-block">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+          <span style="color: green; font-size: 20px; margin-right: 6px;">&#10004;</span>
+          <span style="font-weight: bold;">{{STAFF_NAME}}</span>
+        </div>
+        <div class="signature-line"></div>
+        <div class="signature-title">Staff Verification</div>
+        <div class="signature-designation">Authorized Staff Member</div>
+      </div>
+      <div class="signature-block">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+          <span style="font-weight: bold;">Grup Grampanchayat Kondhan, Palghar-401403</span>
+        </div>
+        <div class="signature-line"></div>
+        <div class="signature-title">Administrative Seal</div>
+        <div class="signature-designation">Gram Panchayat Authority</div>
+      </div>
+      <div class="signature-block">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+          <span style="color: green; font-size: 20px; margin-right: 6px;">&#10004;</span>
+          <span style="font-weight: bold;">{{ADMIN_NAME}}</span>
+        </div>
+        <div class="signature-line"></div>
+        <div class="signature-title">Official Approval</div>
+        <div class="signature-designation">Administrator</div>
+      </div>
+    </div>
+    <div class="footer">
+      <p>This certificate is valid for all official purposes. Unauthorized reproduction or alteration is strictly prohibited.</p>
+      <p style="margin-top: 10px;">Certificate ID: {{CERTIFICATE_NUMBER}} | Generated on {{ISSUANCE_DATE}}</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Certificate } from '../../types';
 import '../../styles/components/CertificateForm.css';
 import { CheckCircle, XCircle, File } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface StaffReviewProps {
   certificate: Certificate;
-  onApprove: (id: string, remarks: string) => void;
+  onApprove: (id: string, remarks: string, partial?: boolean) => void;
   onReject: (id: string, reason: string) => void;
   onClose: () => void;
 }
@@ -14,6 +15,36 @@ const StaffReview: React.FC<StaffReviewProps> = ({ certificate, onApprove, onRej
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null);
   const [remarks, setRemarks] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { userRole } = useAuth();
+
+  const handleDocumentClick = async (docType: string, _fileName: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token missing');
+      }
+
+      const response = await fetch(`http://localhost:5000/api/certificates/${certificate.id}/documents/${docType}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Unable to open document');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    } catch (error: any) {
+      console.error('Document open error:', error);
+      alert(`Error opening document: ${error.message}`);
+    }
+  };
 
   const handleApprove = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +55,9 @@ const StaffReview: React.FC<StaffReviewProps> = ({ certificate, onApprove, onRej
     }
     setIsSubmitting(true);
     try {
-      onApprove(certificate.id, remarks);
+      // If staff, only partial approval allowed
+      const isPartial = userRole === 'staff';
+      onApprove(certificate.id, remarks, isPartial);
       setRemarks('');
       setDecision(null);
     } finally {
@@ -117,8 +150,17 @@ const StaffReview: React.FC<StaffReviewProps> = ({ certificate, onApprove, onRej
                   <div key={idx} className="document-item">
                     <File size={20} />
                     <div className="doc-details">
-                      <div className="doc-name">{doc.type.toUpperCase()}: {doc.fileName}</div>
+                      <button
+                        type="button"
+                        className="doc-link"
+                        onClick={() => handleDocumentClick(doc.type, doc.fileName)}
+                      >
+                        {doc.type.toUpperCase()}: {doc.fileName}
+                      </button>
                       <div className="doc-meta">{new Date(doc.uploadDate).toLocaleString()}</div>
+                      {doc.status && (
+                        <div className={`doc-status ${doc.status}`}>{doc.status}</div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -142,7 +184,7 @@ const StaffReview: React.FC<StaffReviewProps> = ({ certificate, onApprove, onRej
           <div className="review-section decision-section">
             <h3>Your Decision</h3>
             
-            {certificate.status === 'pending' || certificate.status === 'under-review' ? (
+            {certificate.status === 'pending' || certificate.status === 'under-review' || (certificate.status === 'admin-review' && userRole === 'admin') ? (
               <>
                 <div className="decision-options">
                   <button
@@ -184,11 +226,11 @@ const StaffReview: React.FC<StaffReviewProps> = ({ certificate, onApprove, onRej
                             required
                           />
                           <label htmlFor="approveConfirm">
-                            I confirm approval of this certificate application
+                            {userRole === 'staff' ? 'I confirm partial approval / review of this application (staff).' : 'I confirm approval of this certificate application'}
                           </label>
                         </div>
                         <button type="submit" className="btn-approve" disabled={isSubmitting}>
-                          {isSubmitting ? 'Processing...' : 'Confirm & Approve'}
+                          {isSubmitting ? 'Processing...' : userRole === 'staff' ? 'Mark as Reviewed' : 'Confirm & Approve'}
                         </button>
                       </>
                     ) : (

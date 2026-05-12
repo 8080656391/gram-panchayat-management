@@ -23,6 +23,8 @@ const CertificateList: React.FC<CertificateListProps> = ({ certificates, userRol
         return <Clock size={20} className="status-icon pending" />;
       case 'under-review':
         return <Clock size={20} className="status-icon under-review" />;
+      case 'admin-review':
+        return <Clock size={20} className="status-icon admin-review" />;
       case 'rejected':
         return <XCircle size={20} className="status-icon rejected" />;
     }
@@ -42,14 +44,19 @@ const CertificateList: React.FC<CertificateListProps> = ({ certificates, userRol
     if (onDownload) {
       onDownload(cert);
     } else {
-      // Simulate download
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(`${cert.certificateNumber}-${cert.applicantName}`));
-      element.setAttribute('download', `${cert.certificateNumber}.pdf`);
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      // Simulate download: open HTML in new tab, otherwise download
+      const isHtml = cert.downloadUrl?.endsWith('.html');
+      if (isHtml && cert.downloadUrl) {
+        window.open(cert.downloadUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        const element = document.createElement('a');
+        element.setAttribute('href', cert.downloadUrl || 'data:text/plain;charset=utf-8,' + encodeURIComponent(`${cert.certificateNumber}-${cert.applicantName}`));
+        element.setAttribute('download', `${cert.certificateNumber}.pdf`);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }
     }
   };
 
@@ -72,6 +79,7 @@ const CertificateList: React.FC<CertificateListProps> = ({ certificates, userRol
               <th>Type</th>
               <th>Applied On</th>
               <th>Status</th>
+              <th>Documents</th>
               <th>Reviewed By</th>
               <th>Actions</th>
             </tr>
@@ -99,6 +107,17 @@ const CertificateList: React.FC<CertificateListProps> = ({ certificates, userRol
                         <small>Reason: {cert.rejectionReason}</small>
                       </div>
                     )}
+                  </td>
+                  <td>
+                    <div className="document-indicator">
+                      {cert.documents && cert.documents.length > 0 ? (
+                        <span className="doc-count" title={`${cert.documents.length} document(s) uploaded`}>
+                          📎 {cert.documents.length}
+                        </span>
+                      ) : (
+                        <span className="no-docs">None</span>
+                      )}
+                    </div>
                   </td>
                   <td className="reviewed-by">
                     {cert.reviewedBy ? (
@@ -153,7 +172,7 @@ const CertificateList: React.FC<CertificateListProps> = ({ certificates, userRol
                 </tr>
                 {expandedRow === cert.id && (
                   <tr className="expanded-row">
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <div className="expanded-content">
                         <div className="cert-details">
                           <div className="detail-group">
